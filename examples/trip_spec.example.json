@@ -1,0 +1,28 @@
+{
+  "trip_name": "Parents return to Chennai",
+  "travelers": 2,
+  "traveler_profile": "memory:parents",
+  "origin": "SFO",
+  "destination": "MAA",
+  "depart_window": ["2026-11-18", "2026-11-22"],
+  "hard": {
+    "max_stops": 1,
+    "min_layover_min": 150,
+    "max_layover_min": 360,
+    "max_total_duration_min": 1500,
+    "checked_bags_per_traveler": 2,
+    "price_cap_total": 3200,
+    "currency": "USD",
+    "no_redeye": true,
+    "seats_together": true,
+    "require_self_transfer_free": true
+  },
+  "soft": {
+    "weights": {"duration": 0.45, "price": 0.25, "layover_comfort": 0.2, "carrier_rating": 0.1},
+    "preferred_carriers": []
+  },
+  "services": ["VGML", "WCHR"],
+  "allowed_sellers": ["airindia.com", "emirates.com", "qatarairways.com", "singaporeair.com", "lufthansa.com"],
+  "max_price_drift_pct": 3
+}
+

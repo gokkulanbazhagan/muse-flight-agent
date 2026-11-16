@@ -1,0 +1,6 @@
+runs/
+trip_spec.json
+shortlist.json
+__pycache__/
+*.pyc
+.env

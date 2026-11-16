@@ -1,0 +1,57 @@
+[
+  {
+    "id": "c1", "seller": "emirates.com", "carrier": "EK", "total_price": 2860.00, "currency": "USD",
+    "checked_bags_per_traveler": 2, "seats_together_available": true, "single_ticket": true, "carrier_rating": 4.3,
+    "segments": [
+      {"flight": "EK226", "from": "SFO", "to": "DXB", "depart_local": "2026-11-19T15:40", "arrive_local": "2026-11-20T19:30", "duration_min": 950},
+      {"flight": "EK546", "from": "DXB", "to": "MAA", "depart_local": "2026-11-20T22:15", "arrive_local": "2026-11-21T03:30", "duration_min": 255}
+    ],
+    "layovers_min": [165]
+  },
+  {
+    "id": "c2", "seller": "qatarairways.com", "carrier": "QR", "total_price": 2640.00, "currency": "USD",
+    "checked_bags_per_traveler": 2, "seats_together_available": true, "single_ticket": true, "carrier_rating": 4.4,
+    "segments": [
+      {"flight": "QR738", "from": "SFO", "to": "DOH", "depart_local": "2026-11-20T16:35", "arrive_local": "2026-11-21T19:25", "duration_min": 950},
+      {"flight": "QR528", "from": "DOH", "to": "MAA", "depart_local": "2026-11-21T23:55", "arrive_local": "2026-11-22T06:45", "duration_min": 260}
+    ],
+    "layovers_min": [270]
+  },
+  {
+    "id": "c3", "seller": "emirates.com", "carrier": "EK", "total_price": 2410.00, "currency": "USD",
+    "checked_bags_per_traveler": 2, "seats_together_available": true, "single_ticket": true, "carrier_rating": 4.3,
+    "segments": [
+      {"flight": "EK226", "from": "SFO", "to": "DXB", "depart_local": "2026-11-21T15:40", "arrive_local": "2026-11-22T19:30", "duration_min": 950},
+      {"flight": "EK542", "from": "DXB", "to": "MAA", "depart_local": "2026-11-22T20:40", "arrive_local": "2026-11-23T02:05", "duration_min": 235}
+    ],
+    "layovers_min": [70]
+  },
+  {
+    "id": "c4", "seller": "cheap-fares-emirates-deals.example", "carrier": "EK", "total_price": 980.00, "currency": "USD",
+    "checked_bags_per_traveler": 2, "seats_together_available": true, "single_ticket": true, "carrier_rating": 4.3,
+    "segments": [
+      {"flight": "EK226", "from": "SFO", "to": "DXB", "depart_local": "2026-11-19T15:40", "arrive_local": "2026-11-20T19:30", "duration_min": 950},
+      {"flight": "EK546", "from": "DXB", "to": "MAA", "depart_local": "2026-11-20T22:15", "arrive_local": "2026-11-21T03:30", "duration_min": 255}
+    ],
+    "layovers_min": [165]
+  },
+  {
+    "id": "c5", "seller": "lufthansa.com", "carrier": "LH", "total_price": 2550.00, "currency": "USD",
+    "checked_bags_per_traveler": 1, "seats_together_available": true, "single_ticket": true, "carrier_rating": 4.0,
+    "segments": [
+      {"flight": "LH455", "from": "SFO", "to": "FRA", "depart_local": "2026-11-19T14:25", "arrive_local": "2026-11-20T10:35", "duration_min": 670},
+      {"flight": "LH758", "from": "FRA", "to": "MAA", "depart_local": "2026-11-20T13:55", "arrive_local": "2026-11-21T01:15", "duration_min": 590}
+    ],
+    "layovers_min": [200]
+  },
+  {
+    "id": "c6", "seller": "airindia.com", "carrier": "AI", "total_price": 2380.00, "currency": "USD",
+    "checked_bags_per_traveler": 2, "seats_together_available": true, "single_ticket": true, "carrier_rating": 3.6,
+    "segments": [
+      {"flight": "AI180", "from": "SFO", "to": "BOM", "depart_local": "2026-11-19T01:20", "arrive_local": "2026-11-20T06:30", "duration_min": 980},
+      {"flight": "AI571", "from": "BOM", "to": "MAA", "depart_local": "2026-11-20T09:30", "arrive_local": "2026-11-20T11:30", "duration_min": 120}
+    ],
+    "layovers_min": [180]
+  }
+]
+

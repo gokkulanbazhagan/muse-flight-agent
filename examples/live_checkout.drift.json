@@ -1,0 +1,11 @@
+{
+  "seller": "www.emirates.com",
+  "total_price": 3031.6,
+  "currency": "USD",
+  "travelers": 2,
+  "flights": [
+    "EK226",
+    "EK546"
+  ],
+  "depart_date": "2026-11-19"
+}

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flightagent"
+version = "1.0.0"
+description = "Deterministic guardrails for an agentic flight booker (Muse / SKILL.md agents)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Gokkul Anbazhagan"}]
+dependencies = []
+
+[project.scripts]
+flightagent = "flightagent.cli:main"
+
+[tool.setuptools]
+packages = ["flightagent"]
