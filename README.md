@@ -24,15 +24,25 @@ rules in a small CLI the agent must run, where exit code `2` means stop.
 
 ## How it works
 
+The agent loops on one command, `flightagent next <run>`, which reads the run
+folder and says exactly what to do next:
+
 ```
-check-spec ─► plan ─► search allowed sellers ─► scan-page ─► validate
-                                                               │
-            receipt ◄─ booking ◄─ platform checkout ◄─ precheck ◄─ human picks
-                                     approval (human)
+INTAKE ─► SEARCH ─► VALIDATE ─► APPROVE ─► CHECKOUT ─► PRECHECK ─► PAY ─► SERVICES ─► DONE
+ asks the    allowed    hard rules   user picks   live page    price/seller  platform   meals,      receipt
+ user        sellers +  + ranking                 captured     /flights      approval   assistance
+             scan-page                                         unchanged?    (human)
 ```
 
-| Command | What it checks |
+Every stop for the user is explicit (exit code 2). Everything else runs on its
+own. The run folder is the state, so a trip survives restarts and new chats.
+
+| Command | What it does |
 | --- | --- |
+| `next` | Autopilot: reads the run folder, returns the stage, the action and the exact command |
+| `intake` | Asks the user for missing trip details, validates answers, writes the spec |
+| `approve` | Records which option the user picked |
+| `schema` | Prints the candidate format the agent must write |
 | `check-spec` | Valid airports, dates, caps, weights; refuses passport/card/DOB fields in the file |
 | `scan-page` | Agent-directed instructions, fake "user approved" claims, OTP/card asks, hidden CSS text, zero-width characters |
 | `validate` | Stops, layover window, duration, bags, price cap, red-eyes, seats together, single ticket, route, date window, seller allowlist and look-alikes; ranks the rest and prints approval cards |
@@ -51,8 +61,8 @@ Architecture and the split between Muse's safety layer and this skill:
 ```bash
 git clone https://github.com/Gokkul23/muse-flight-agent && cd muse-flight-agent
 python3 -m flightagent selftest
-bash examples/demo.sh          # the full loop on sample data
-python3 -m unittest discover -s tests
+bash examples/demo.sh          # the guardrails on sample data
+python3 -m unittest discover -s tests   # includes a full zero-to-done autopilot run
 ```
 
 The demo walks one trip end to end: 2 of 6 sample itineraries pass; the
@@ -65,15 +75,21 @@ and a receipt is printed.
 
 See [INSTALL_PROMPT.md](INSTALL_PROMPT.md): pin a commit, have Muse install the
 skill's files and run its status check, store traveler details in Muse memory,
-then ask it to book.
+then say "book flights for my family." The agent takes it from there.
+
+## What it will not do
+
+It will not pay without you. Muse's checkout approval asks you to confirm the
+exact amount, and no skill can switch that off; that's by design. Everything
+before that tap runs on its own.
 
 ## Repo layout
 
 ```
-flightagent/               CLI + modules (spec, guard, validate, precheck, watch, receipt, selftest)
+flightagent/               CLI + modules (flow, intake, spec, guard, candidates, validate, precheck, watch, receipt, selftest)
 skills/flight-booker/      SKILL.md + references (spec schema, safety checklist)
 examples/                  sample spec, candidates, pages, checkout quotes, demo.sh
-tests/                     33 unit and end-to-end tests
+tests/                     35 tests, including a full autopilot run
 docs/ARCHITECTURE.md       diagram, layers, known limits
 ```
 

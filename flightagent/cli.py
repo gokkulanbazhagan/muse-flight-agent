@@ -1,6 +1,10 @@
 """Command line the agent calls at each step. Every command prints JSON or text
 and exits non-zero when the agent must stop and ask the user.
 
+  python3 -m flightagent next        runs/<id>          # autopilot: what to do now
+  python3 -m flightagent intake      runs/<id> --set origin=SFO ... [--accept-defaults]
+  python3 -m flightagent approve     runs/<id> --pick 1
+  python3 -m flightagent schema
   python3 -m flightagent check-spec  trip_spec.json
   python3 -m flightagent scan-page   page.txt           [--run runs/<id>] [--site airline.com]
   python3 -m flightagent validate    trip_spec.json candidates.json [--out shortlist.json] [--run ...]
@@ -18,7 +22,8 @@ import argparse
 import json
 import sys
 
-from . import __version__, guard, precheck, receipt, spec, validate, watch
+from . import __version__, flow, guard, intake, precheck, receipt, spec, validate, watch
+from .candidates import SCHEMA, check_all
 
 
 def _load(path: str):
@@ -52,7 +57,12 @@ def cmd_validate(a) -> int:
     if errs:
         _dump({"ok": False, "problems": errs})
         return 2
-    result = validate.run(s, _load(a.candidates), a.top)
+    cands = _load(a.candidates)
+    bad = check_all(cands)
+    if bad:
+        _dump({"ok": False, "problems": bad})
+        return 2
+    result = validate.run(s, cands, a.top)
     if a.out:
         with open(a.out, "w") as f:
             json.dump(result, f, indent=2)
@@ -76,9 +86,31 @@ def cmd_precheck(a) -> int:
         return 1
     result = precheck.precheck(s, picked, _load(a.live))
     if a.run:
-        receipt.log(a.run, "precheck", summary=f"{result['verdict']}: {'; '.join(result['block']) or 'all checks passed'}")
+        receipt.log(a.run, "precheck", verdict=result["verdict"], summary=f"{result['verdict']}: {'; '.join(result['block']) or 'all checks passed'}")
     _dump(result)
     return 0 if result["verdict"] == "PASS" else 2
+
+
+def cmd_intake(a) -> int:
+    result = intake.intake(a.run, a.set or [], a.accept_defaults)
+    _dump(result)
+    return 0 if result["done"] else 2
+
+
+def cmd_next(a) -> int:
+    result = flow.next_step(a.run)
+    _dump(result)
+    return 2 if result["stop_for_user"] else 0
+
+
+def cmd_approve(a) -> int:
+    _dump(flow.approve(a.run, a.pick))
+    return 0
+
+
+def cmd_schema(_a) -> int:
+    _dump(SCHEMA)
+    return 0
 
 
 def cmd_watch(a) -> int:
@@ -118,6 +150,12 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("precheck"); p.add_argument("spec"); p.add_argument("shortlist")
     p.add_argument("--pick", type=int, required=True); p.add_argument("--live", required=True); p.add_argument("--run")
     p.set_defaults(fn=cmd_precheck)
+    p = sub.add_parser("intake"); p.add_argument("run"); p.add_argument("--set", action="append")
+    p.add_argument("--accept-defaults", action="store_true"); p.set_defaults(fn=cmd_intake)
+    p = sub.add_parser("next"); p.add_argument("run"); p.set_defaults(fn=cmd_next)
+    p = sub.add_parser("approve"); p.add_argument("run"); p.add_argument("--pick", type=int, required=True)
+    p.set_defaults(fn=cmd_approve)
+    p = sub.add_parser("schema"); p.set_defaults(fn=cmd_schema)
     p = sub.add_parser("watch"); p.add_argument("baseline"); p.add_argument("quote")
     p.add_argument("--threshold", type=float, default=3.0); p.set_defaults(fn=cmd_watch)
     p = sub.add_parser("log"); p.add_argument("run"); p.add_argument("step", choices=receipt.STEPS)

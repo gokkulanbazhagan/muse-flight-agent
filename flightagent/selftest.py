@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import sys
 
-from . import __version__, guard, precheck, spec, validate, watch
+import tempfile
+
+from . import __version__, flow, guard, precheck, spec, validate, watch
 
 _SPEC = {
     "trip_name": "selftest", "travelers": 2, "origin": "SFO", "destination": "MAA",
@@ -31,6 +33,8 @@ def run() -> tuple[bool, str]:
     live = {"seller": "emirates.com", "total_price": 3000.0, "currency": "USD", "travelers": 2, "flights": ["EK226", "EK546"], "depart_date": "2026-11-19"}
     checks.append(("precheck blocks a 7% price jump", precheck.precheck(_SPEC, pick, live)["verdict"] == "BLOCK"))
     checks.append(("fare watch notices a drop", watch.compare({"total_price": 2800, "currency": "USD"}, {"total_price": 2600, "currency": "USD"})["notify"]))
+    with tempfile.TemporaryDirectory() as d:
+        checks.append(("autopilot starts by asking the user", flow.next_step(d)["stage"] == "INTAKE"))
     ok = all(c for _, c in checks)
     lines = [f"flightagent {__version__} on Python {sys.version.split()[0]}"]
     lines += [f"  [{'ok' if c else 'FAIL'}] {name}" for name, c in checks]

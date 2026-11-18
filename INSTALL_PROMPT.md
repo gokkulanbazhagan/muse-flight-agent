@@ -12,11 +12,11 @@ as code you choose to run.
 
 ## 1. Install
 
-Pin a commit so what you install is what you read:
+Pin a release so what you install is what you read:
 
 ```
-Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/<commit-sha>/skills/flight-booker/SKILL.md
-Clone https://github.com/Gokkul23/muse-flight-agent at that commit into your workspace.
+Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/v1.1.0/skills/flight-booker/SKILL.md
+Clone https://github.com/Gokkul23/muse-flight-agent at tag v1.1.0 into your workspace.
 Install exactly the files in the skill's "Files manifest" section, keeping paths.
 Run its status check (selftest and the unit tests) and show me the real output.
 If both pass, save flight-booker as a reusable skill for any request to find,
@@ -29,36 +29,31 @@ Sentinel, which governs all network traffic out of the VM.
 ## 2. Traveler profile (memory, not files)
 
 ```
-Remember a traveler profile called "parents": two adults, names exactly as on
-their passports: <name 1>, <name 2>. Vegetarian meals (VGML) and wheelchair
-assistance at airports (WCHR). Use this profile only for flight bookings.
+Remember a traveler profile called "family": <names exactly as on passports>.
+<meal / assistance needs>. Use this profile only for flight bookings.
 ```
 
-You can review or edit it later in Muse's memory settings.
-
-## 3. Trip spec
+## 3. Book
 
 ```
-Create trip_spec.json from examples/trip_spec.example.json with these changes:
-<dates, airports, cap, sellers>. Run check-spec and show me the result.
+Use flight-booker to book flights for my family, run folder runs/family-maa.
+Run the autopilot (flightagent next) and follow it until DONE. Ask me what you
+need to know in one message.
 ```
 
-## 4. Book
+That's it. The agent asks you for the trip details, searches, shows you the
+best options, asks you to pick, checks the checkout page, and submits payment.
+Muse then asks you to approve the exact amount.
 
-```
-Use flight-booker for trip_spec.json with run folder runs/parents-maa.
-Follow the skill exactly. Show me the approval cards and wait for my pick.
-```
-
-## 5. Watch the fare (optional)
+## 4. Watch the fare (optional)
 
 ```
 Every day at 8am until <date>, run the flight-booker fare watch for
-runs/parents-maa. Message me only when the CLI exits 2. Never rebook.
+runs/family-maa. Message me only when it says to. Never rebook.
 ```
 
-## 6. Receipt
+## 5. Receipt
 
 ```
-Show me the receipt for runs/parents-maa.
+Show me the receipt for runs/family-maa.
 ```
