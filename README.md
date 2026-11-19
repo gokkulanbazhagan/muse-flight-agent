@@ -1,6 +1,6 @@
 # muse-flight-agent ✈️
 
-[![tests](https://github.com/Gokkul23/muse-flight-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/Gokkul23/muse-flight-agent/actions/workflows/tests.yml)
+[![tests](https://github.com/gokkulanbazhagan/muse-flight-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/gokkulanbazhagan/muse-flight-agent/actions/workflows/tests.yml)
 
 A flight-booking skill for your **Meta Muse** agent. You tell it where and when;
 it asks you the right questions, compares **every airline** on Google Flights and
@@ -24,7 +24,7 @@ finish before sending the next.
 Copy and send this exactly. It always installs the **latest version**:
 
 ```
-Install the flight-booker skill from https://github.com/Gokkul23/muse-flight-agent (main branch, latest version).
+Install the flight-booker skill from https://github.com/gokkulanbazhagan/muse-flight-agent (main branch, latest version).
 Clone the repo into your workspace, read skills/flight-booker/SKILL.md, and install exactly the files in its "Files manifest" section, keeping paths.
 Run python3 -m flightagent selftest and python3 -m unittest discover -s tests, and show me the real output.
 If both pass, save flight-booker as a reusable skill for any request to find, compare, book or watch flights.
@@ -40,7 +40,7 @@ and the tests ending in `OK`.
 
 ```
 Update the flight-booker skill to the latest version from
-https://github.com/Gokkul23/muse-flight-agent (main branch). Replace your installed
+https://github.com/gokkulanbazhagan/muse-flight-agent (main branch). Replace your installed
 files per the Files manifest in skills/flight-booker/SKILL.md. Then run
 python3 -m flightagent selftest and python3 -m unittest discover -s tests and show
 me the real output.
@@ -122,7 +122,7 @@ Show me the receipt for runs/<trip-name>.
 | "Pre-checkout gate blocked" | Something changed at checkout, usually the price. Decide: continue, pick another option, or search again. |
 | An airline site won't open | Approve the request if Muse asks. Otherwise pick another option. |
 | "Airline XX is not in the registry" | A smaller airline isn't on the built-in list. Tell Muse its official website and it'll add it for this trip. |
-| Anything else | [Open an issue](https://github.com/Gokkul23/muse-flight-agent/issues) with the exact message. |
+| Anything else | [Open an issue](https://github.com/gokkulanbazhagan/muse-flight-agent/issues) with the exact message. |
 
 ---
 
@@ -151,7 +151,7 @@ never sees your real card, and every payment needs your tap.
 ### Run it locally (Python 3.10+, no dependencies)
 
 ```bash
-git clone https://github.com/Gokkul23/muse-flight-agent && cd muse-flight-agent
+git clone https://github.com/gokkulanbazhagan/muse-flight-agent && cd muse-flight-agent
 python3 -m flightagent selftest
 bash examples/demo.sh                   # the guardrails on sample data
 python3 -m unittest discover -s tests   # 55 tests, including a full autopilot run
@@ -213,7 +213,7 @@ file (`check-spec` refuses them). Traveler details stay in your agent's memory.
 
 ## Disclaimer
 
-Personal project by [Gokkul Anbazhagan](https://github.com/Gokkul23). Not
+Personal project by [Gokkul Anbazhagan](https://github.com/gokkulanbazhagan). Not
 affiliated with or endorsed by Meta. Sample fares and pages are fictional.
 Always review a booking before you approve payment.
 
