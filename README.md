@@ -23,8 +23,8 @@ finish before sending the next.
 Copy and send this exactly:
 
 ```
-Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/5b24a6a9eae124b5ed2d1cca821dd84839145718/skills/flight-booker/SKILL.md
-Clone https://github.com/Gokkul23/muse-flight-agent at commit 5b24a6a9eae124b5ed2d1cca821dd84839145718 into your workspace.
+Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/16e4e13596c8801ef72b5ccb71313a219f50f63b/skills/flight-booker/SKILL.md
+Clone https://github.com/Gokkul23/muse-flight-agent at commit 16e4e13596c8801ef72b5ccb71313a219f50f63b into your workspace.
 Install exactly the files in the skill's "Files manifest" section, keeping paths.
 Run python3 -m flightagent selftest and python3 -m unittest discover -s tests, and show me the real output.
 If both pass, save flight-booker as a reusable skill for any request to find, compare, book or watch flights.
