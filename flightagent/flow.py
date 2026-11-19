@@ -21,7 +21,8 @@ from typing import Any
 
 from . import receipt
 from .candidates import check_all
-from .guard import registrable
+from . import policy
+from .guard import host_of, registrable
 
 ORDINALS = {1: ("1", "one", "first"), 2: ("2", "two", "second"), 3: ("3", "three", "third"),
             4: ("4", "four", "fourth"), 5: ("5", "five", "fifth")}
@@ -76,14 +77,21 @@ def next_step(run: str) -> dict[str, Any]:
     cands = _j(run, "candidates.json")
     scanned = {registrable(e["site"]) for e in log if e["step"] == "page_scan" and e.get("site")}
     if cands is None:
-        return _status("SEARCH", f"No search results recorded. Allowed sites: {', '.join(spec['allowed_sellers'])}.",
-                       ["candidates.json", *(f"page scan for {s}" for s in spec["allowed_sellers"] if registrable(s) not in scanned)],
+        where = (f"Search engines: {', '.join(policy.search_sources(spec))}. Booking sites: "
+                 + ("each airline's own official site" if policy.seller_policy(spec) == "airline_official" else "listed sites only")
+                 + (f", plus {', '.join(spec['allowed_sellers'])}" if spec.get("allowed_sellers") and policy.seller_policy(spec) == "airline_official"
+                    else (f": {', '.join(spec['allowed_sellers'])}" if spec.get("allowed_sellers") else "")) + ".")
+        return _status("SEARCH", "No search results recorded. " + where,
+                       ["candidates.json", "page scans of the results pages used"],
                        command="python3 -m flightagent scan-page <page.txt> --site <domain> --run " + run,
-                       window=spec["depart_window"], route=f"{spec['origin']}-{spec['destination']}", travelers=spec["travelers"])
-    bad = check_all(cands)
-    unscanned = sorted({registrable(c["seller"]) for c in cands if isinstance(c, dict) and c.get("seller")} - scanned)
+                       window=spec["depart_window"], route=f"{spec['origin']}-{spec['destination']}", travelers=spec["travelers"],
+                       cabin=spec.get("cabin", "economy"), preferred_airlines=spec.get("preferred_airlines", []),
+                       avoid_airlines=spec.get("avoid_airlines", []))
+    bad = check_all(cands, spec)
+    unscanned = sorted({registrable(host_of(c["source_url"])) for c in cands
+                        if isinstance(c, dict) and c.get("source_url")} - scanned)
     if unscanned:
-        bad.append(f"no page scan logged for {', '.join(unscanned)}: candidates must come from scanned live pages")
+        bad.append(f"no page scan logged for {', '.join(unscanned)}: results must come from scanned live pages")
     if bad:
         return _status("SEARCH", "Search results are recorded but not usable yet.", bad[:6])
 
@@ -117,8 +125,8 @@ def next_step(run: str) -> dict[str, Any]:
         return _status("PRECHECK", f"Pre-checkout gate blocked: {pre[-1].get('summary')}", ["user decision"], True)
 
     if spec.get("mode") == "dry_run":
-        return _status("DRY_RUN_COMPLETE", f"Dry run complete. Gate passed at {live['total_price']:.2f} {live['currency']}; "
-                       "payment is not part of a dry run.", [], True, f"python3 -m flightagent receipt {run}")
+        return _status("DRY_RUN_COMPLETE", f"Dry run complete at the payment page. Gate passed at "
+                       f"{live['total_price']:.2f} {live['currency']}; payment is not part of a dry run.", [], True, f"python3 -m flightagent receipt {run}")
 
     steps = {e["step"] for e in log}
     if "booking" not in steps:

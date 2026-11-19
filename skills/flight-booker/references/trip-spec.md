@@ -10,7 +10,7 @@ hold identity documents or payment details.
 |---|---|---|
 | `trip_name` | string | Free label, used in run logs. |
 | `travelers` | int | Number of seats to book. |
-| `traveler_profile` | string | Pointer to the memory entry with names and DOBs, e.g. `"memory:parents"`. |
+| `traveler_profile` | string | The saved memory profile with names, dates of birth and contact details, e.g. `"memory:family"`. |
 | `origin` / `destination` | IATA codes | e.g. `"SFO"`, `"MAA"`. |
 | `depart_window` | `[start, end]` ISO dates | Earliest and latest departure date. |
 | `hard.max_stops` | int | Itineraries with more stops are rejected. |
@@ -25,7 +25,11 @@ hold identity documents or payment details.
 | `soft.weights` | object | Weights for `duration`, `price`, `layover_comfort`, `carrier_rating`. |
 | `soft.preferred_carriers` | list | Small bonus, never overrides a hard rule. |
 | `services` | list | e.g. `["VGML", "WCHR"]` (meal and assistance codes to request after booking). |
-| `allowed_sellers` | list | Domains the agent may check out on. |
+| `seller_policy` | string | `airline_official` (default): the official site of an airline flying the itinerary, plus `allowed_sellers`. `listed_only`: only `allowed_sellers`. |
+| `allowed_sellers` | list | Extra checkout sites the user allowed (e.g. a travel agency), or the only ones with `listed_only`. |
+| `search_sources` | list | Search engines for finding flights. Default `google.com`, `skyscanner.com`. Never used for checkout. |
+| `preferred_airlines` / `avoid_airlines` | list | 2-letter airline codes. Preferred ones rank higher; avoided ones are rejected. |
+| `cabin` | string | economy, premium economy, business or first. |
 | `max_price_drift_pct` | number | Stop if the price moves more than this between shortlist and checkout. |
 
 ## Candidate shape

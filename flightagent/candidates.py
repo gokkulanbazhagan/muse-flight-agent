@@ -4,12 +4,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from .guard import host_of, registrable
+from . import policy
 
 SCHEMA = {
     "id": "string, unique",
     "seller": "domain you would check out on, e.g. singaporeair.com",
-    "source_url": "the live results page this itinerary was read from (must be on the seller's domain)",
+    "source_url": "the live results page this itinerary was read from: the seller's site or a search engine (Google Flights, Skyscanner)",
     "carrier": "airline code, e.g. SQ",
     "total_price": "number, all travelers, taxes and fees included",
     "currency": "e.g. USD",
@@ -22,7 +22,7 @@ SCHEMA = {
 }
 
 
-def check_one(c: Any) -> list[str]:
+def check_one(c: Any, spec: dict[str, Any] | None = None) -> list[str]:
     if not isinstance(c, dict):
         return ["candidate is not an object"]
     cid = c.get("id", "?")
@@ -35,8 +35,8 @@ def check_one(c: Any) -> list[str]:
     url = str(c["source_url"])
     if not url.startswith("https://"):
         errs.append(f"{cid}: source_url must be the https page the itinerary came from")
-    elif registrable(host_of(url)) != registrable(c["seller"]):
-        errs.append(f"{cid}: source_url is not on the seller's domain {c['seller']}")
+    elif not policy.source_ok(url, c["seller"], spec or {}):
+        errs.append(f"{cid}: source_url is neither on the seller's site {c['seller']} nor on a search engine in search_sources")
     if not isinstance(c["total_price"], (int, float)) or c["total_price"] <= 0:
         errs.append(f"{cid}: total_price must be a positive number")
     segs = c["segments"]
@@ -56,10 +56,10 @@ def check_one(c: Any) -> list[str]:
     return errs
 
 
-def check_all(cands: Any) -> list[str]:
+def check_all(cands: Any, spec: dict[str, Any] | None = None) -> list[str]:
     if not isinstance(cands, list) or not cands:
         return ["candidates.json must be a non-empty list"]
-    errs = [e for c in cands for e in check_one(c)]
+    errs = [e for c in cands for e in check_one(c, spec)]
     ids = [c.get("id") for c in cands if isinstance(c, dict)]
     if len(ids) != len(set(ids)):
         errs.append("candidate ids must be unique")

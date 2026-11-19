@@ -25,7 +25,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | Spec is sane | code | `check-spec` | bad airports, window, weights; identity data in the file |
 | Page is safe to read | code | `scan-page` | agent-directed instructions, fake consent, OTP asks, hidden CSS, zero-width text |
-| Option is allowed | code | `validate` | any hard rule breaks; seller not allowlisted or a look-alike |
+| Option is allowed | code | `validate` | any hard rule breaks; seller is not the airline's official site or a user-listed site; look-alike; search engine used as a seller |
 | Which option | **human** | approval cards | always waits |
 | Checkout matches approval | code | `precheck` | price drift over limit, seller/flights/date/travelers changed |
 | Money moves | **human** via Muse | platform checkout approval | always asks |

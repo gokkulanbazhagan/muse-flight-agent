@@ -23,9 +23,15 @@ def host_of(url_or_host: str) -> str:
     return s.split(":")[0].rstrip(".")
 
 
+# Country suffixes where the registrable name sits one level deeper (jal.co.jp, piac.com.pk).
+_SECOND_LEVEL = {"co", "com", "net", "org", "gov", "ac", "edu", "or", "ne", "go"}
+
+
 def registrable(domain: str) -> str:
-    """Last two labels of a host. Good enough for an allowlist of airline sites."""
+    """The registrable part of a host: emirates.com, jal.co.jp, aerolineas.com.ar."""
     parts = [p for p in host_of(domain).split(".") if p]
+    if len(parts) >= 3 and len(parts[-1]) == 2 and parts[-2] in _SECOND_LEVEL:
+        return ".".join(parts[-3:])
     return ".".join(parts[-2:]) if len(parts) >= 2 else ".".join(parts)
 
 
@@ -58,7 +64,7 @@ def lookalike_of(seller: str, allowed: list[str]) -> str | None:
     labels = host.split(".")
     for a in allowed:
         brand = registrable(a).split(".")[0]
-        if any(brand in lab and lab != brand for lab in labels):
+        if len(brand) >= 5 and any(brand in lab and lab != brand for lab in labels):
             return a  # emirates-deals.example, book-emirates.com
         if any(_skeleton(lab) == _skeleton(brand) for lab in labels):
             return a  # em1rates.com, qatarairvvays.com

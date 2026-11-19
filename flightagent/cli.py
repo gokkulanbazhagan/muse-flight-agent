@@ -59,7 +59,7 @@ def cmd_validate(a) -> int:
         _dump({"ok": False, "problems": errs})
         return 2
     cands = _load(a.candidates)
-    bad = check_all(cands)
+    bad = check_all(cands, s)
     if bad:
         _dump({"ok": False, "problems": bad})
         return 2

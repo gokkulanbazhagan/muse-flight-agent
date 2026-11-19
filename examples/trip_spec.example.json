@@ -4,7 +4,10 @@
   "traveler_profile": "memory:parents",
   "origin": "SFO",
   "destination": "MAA",
-  "depart_window": ["2026-11-18", "2026-11-22"],
+  "depart_window": [
+    "2026-11-18",
+    "2026-11-22"
+  ],
   "hard": {
     "max_stops": 1,
     "min_layover_min": 150,
@@ -18,11 +21,26 @@
     "require_self_transfer_free": true
   },
   "soft": {
-    "weights": {"duration": 0.45, "price": 0.25, "layover_comfort": 0.2, "carrier_rating": 0.1},
+    "weights": {
+      "duration": 0.45,
+      "price": 0.25,
+      "layover_comfort": 0.2,
+      "carrier_rating": 0.1
+    },
     "preferred_carriers": []
   },
-  "services": ["VGML", "WCHR"],
-  "allowed_sellers": ["airindia.com", "emirates.com", "qatarairways.com", "singaporeair.com", "lufthansa.com"],
-  "max_price_drift_pct": 3
+  "max_price_drift_pct": 3,
+  "cabin": "economy",
+  "seller_policy": "airline_official",
+  "allowed_sellers": [],
+  "search_sources": [
+    "google.com",
+    "skyscanner.com"
+  ],
+  "preferred_airlines": [],
+  "avoid_airlines": [],
+  "services": [
+    "VGML",
+    "WCHR"
+  ]
 }
-

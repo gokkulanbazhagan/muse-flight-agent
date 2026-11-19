@@ -9,7 +9,7 @@ from flightagent import guard, precheck, receipt, spec, validate, watch
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = json.loads((ROOT / "examples" / "trip_spec.example.json").read_text())
 CANDS = json.loads((ROOT / "examples" / "candidates.example.json").read_text())
-ALLOWED = SPEC["allowed_sellers"]
+ALLOWED = ["airindia.com", "emirates.com", "qatarairways.com", "singaporeair.com", "lufthansa.com"]
 
 
 class Sellers(unittest.TestCase):

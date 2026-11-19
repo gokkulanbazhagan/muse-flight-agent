@@ -22,7 +22,7 @@ class HardConstraints(unittest.TestCase):
         self.assertTrue(any("layover" in r for r in v.check_hard(by_id("c3"), SPEC)))
 
     def test_unlisted_seller_rejected(self):
-        self.assertTrue(any("allowed_sellers" in r for r in v.check_hard(by_id("c4"), SPEC)))
+        self.assertTrue(any("not the official site" in r for r in v.check_hard(by_id("c4"), SPEC)))
 
     def test_lookalike_subdomain_not_allowed(self):
         self.assertFalse(seller_allowed("emirates.com.evil.example", ["emirates.com"]))

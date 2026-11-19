@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from .guard import check_seller, registrable
+from . import policy
+from .guard import registrable
 
 
 def precheck(spec: dict[str, Any], approved: dict[str, Any], live: dict[str, Any]) -> dict[str, Any]:
@@ -21,7 +22,7 @@ def precheck(spec: dict[str, Any], approved: dict[str, Any], live: dict[str, Any
     block: list[str] = []
     warn: list[str] = []
 
-    seller = check_seller(live.get("seller", ""), spec["allowed_sellers"])
+    seller = policy.seller_verdict(live.get("seller", ""), spec, set(approved.get("carriers", [])))
     if not seller["allowed"]:
         block.append(f"checkout seller {seller['seller']} is not allowed: {', '.join(seller['reasons'])}")
     if registrable(live.get("seller", "")) != registrable(approved["seller"]):

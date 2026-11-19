@@ -12,7 +12,8 @@ from datetime import datetime
 from statistics import median
 from typing import Any
 
-from .guard import registrable, seller_allowed
+from . import airlines, policy
+from .guard import registrable
 
 REDEYE_START_HOUR = 23
 REDEYE_END_HOUR = 5
@@ -33,8 +34,13 @@ def check_hard(c: dict[str, Any], spec: dict[str, Any]) -> list[str]:
     h = spec["hard"]
     reasons: list[str] = []
 
-    if not seller_allowed(c.get("seller", ""), spec.get("allowed_sellers", [])):
-        reasons.append(f"seller {c.get('seller')!r} not on allowed_sellers")
+    carriers = airlines.carriers_of(c)
+    verdict = policy.seller_verdict(c.get("seller", ""), spec, carriers)
+    if not verdict["allowed"]:
+        reasons.append(f"seller {c.get('seller')!r}: {'; '.join(verdict['reasons'])}")
+    avoided = carriers & {a.upper() for a in spec.get("avoid_airlines", [])}
+    if avoided:
+        reasons.append(f"flies {', '.join(sorted(airlines.name(a) for a in avoided))}, which the user wants to avoid")
 
     stops = len(c["segments"]) - 1
     if stops > h["max_stops"]:
@@ -103,7 +109,7 @@ def layover_comfort(c: dict[str, Any], spec: dict[str, Any]) -> float:
 def score(passing: list[dict[str, Any]], spec: dict[str, Any]) -> list[dict[str, Any]]:
     w = {"duration": 0.4, "price": 0.3, "layover_comfort": 0.2, "carrier_rating": 0.1}
     w.update(spec.get("soft", {}).get("weights", {}))
-    preferred = set(spec.get("soft", {}).get("preferred_carriers", []))
+    preferred = {x.upper() for x in spec.get("soft", {}).get("preferred_carriers", []) + spec.get("preferred_airlines", [])}
 
     dur_s = normalise([total_duration(c) for c in passing])
     price_s = normalise([c["total_price"] for c in passing])
@@ -115,7 +121,7 @@ def score(passing: list[dict[str, Any]], spec: dict[str, Any]) -> list[dict[str,
             "carrier_rating": min(c.get("carrier_rating", 3.0), 5.0) / 5.0,
         }
         total = sum(w[k] * parts[k] for k in w if k in parts)
-        if c.get("carrier") in preferred:
+        if airlines.carriers_of(c) & preferred:
             total += 0.03
         c["_score"] = round(total, 4)
         c["_score_parts"] = {k: round(v, 3) for k, v in parts.items()}
@@ -143,7 +149,7 @@ def approval_card(c: dict[str, Any], spec: dict[str, Any], rank: int) -> str:
     lays = ", ".join(fmt_minutes(l) for l in c.get("layovers_min", [])) or "nonstop"
     why = max(c["_score_parts"], key=c["_score_parts"].get).replace("_", " ")
     return (
-        f"Option {rank}: {c['carrier']} via {c['seller']}\n"
+        f"Option {rank}: {airlines.name(c['carrier'])} ({c['carrier']}), book on {c['seller']}\n"
         f"  {segs}\n"
         f"  Layovers: {lays} | Total: {fmt_minutes(total_duration(c))}\n"
         f"  {spec['travelers']} travelers, {c['checked_bags_per_traveler']} bags each, "
@@ -172,6 +178,8 @@ def run(spec: dict[str, Any], candidates: list[dict[str, Any]], top: int) -> dic
             "price_seen": c["total_price"],
             "max_price_at_checkout": round(c["total_price"] * (1 + spec.get("max_price_drift_pct", 3) / 100), 2),
             "seller": c["seller"],
+            "seller_basis": policy.seller_verdict(c["seller"], spec, airlines.carriers_of(c))["basis"],
+            "carriers": sorted(airlines.carriers_of(c)),
             "flights": [s["flight"] for s in c["segments"]],
             "depart_date": c["segments"][0]["depart_local"][:10],
             "approval_card": approval_card(c, spec, i),

@@ -38,6 +38,10 @@ def run() -> tuple[bool, str]:
         from . import intake
         out = intake.intake(d, ["origin=SFO"])
         checks.append(("intake waits for the user's answers", out["state"] == "needs_user_answers"))
+    from . import policy
+    checks.append(("search engines are never sellers",
+                   not policy.seller_verdict("www.google.com", {}, {"EK"})["allowed"]
+                   and policy.seller_verdict("www.emirates.com", {}, {"EK"})["allowed"]))
     ok = all(c for _, c in checks)
     lines = [f"flightagent {__version__} on Python {sys.version.split()[0]}"]
     lines += [f"  [{'ok' if c else 'FAIL'}] {name}" for name, c in checks]

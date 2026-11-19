@@ -2,4 +2,4 @@
 
 The model searches, plain code decides, a human pays.
 """
-__version__ = "1.2.0"
+__version__ = "1.3.0"

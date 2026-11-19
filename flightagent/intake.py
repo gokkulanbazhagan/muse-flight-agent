@@ -18,7 +18,7 @@ import os
 from datetime import date, timedelta
 from typing import Any
 
-from . import receipt
+from . import airlines, receipt
 from . import spec as spec_mod
 
 # key, question, parser, default (None = no default)
@@ -29,8 +29,12 @@ QUESTIONS: list[tuple[str, str, str, Any]] = [
     ("depart_latest", "Latest departure date? (YYYY-MM-DD, same as earliest if fixed)", "date", None),
     ("travelers", "How many travelers?", "int", None),
     ("price_cap_total", "Maximum total price for everyone, taxes included?", "float", None),
-    ("allowed_sellers", "Which airline websites may be used? (comma-separated domains, e.g. united.com)", "list", None),
+    ("traveler_profile", "Which saved traveler profile should be used for names and needs? (e.g. family)", "text", None),
     ("currency", "Currency for that price?", "upper", "USD"),
+    ("cabin", "Cabin? (economy, premium economy, business, first)", "cabin", "economy"),
+    ("preferred_airlines", "Any airlines you prefer? (2-letter codes like SQ, EK; blank for no preference)", "codes", []),
+    ("avoid_airlines", "Any airlines to avoid? (2-letter codes; blank for none)", "codes", []),
+    ("extra_sellers", "Besides the airlines' own websites, any travel sites allowed for booking? (e.g. expedia.com; blank for none)", "list", []),
     ("max_stops", "Maximum stops?", "int", 1),
     ("min_layover_min", "Shortest acceptable layover, in minutes?", "int", 120),
     ("max_layover_min", "Longest acceptable layover, in minutes?", "int", 360),
@@ -40,7 +44,8 @@ QUESTIONS: list[tuple[str, str, str, Any]] = [
     ("seats_together", "Must everyone sit together? (yes/no)", "bool", True),
     ("max_price_drift_pct", "Stop if the price rises more than what % before paying?", "float", 3),
 ]
-REQUIRED = {"origin", "destination", "depart_earliest", "depart_latest", "travelers", "price_cap_total", "allowed_sellers"}
+REQUIRED = {"origin", "destination", "depart_earliest", "depart_latest", "travelers", "price_cap_total", "traveler_profile"}
+CABINS = ("economy", "premium economy", "business", "first")
 KINDS = {k: kind for k, _, kind, _ in QUESTIONS}
 DEFAULTS = {k: d for k, _, _, d in QUESTIONS if d is not None}
 SOURCES = ("user", "memory")
@@ -61,6 +66,21 @@ def _parse(kind: str, raw: str) -> Any:
         return float(raw.replace(",", "").lstrip("$"))
     if kind == "upper":
         return raw.upper()
+    if kind == "text":
+        if not raw:
+            raise ValueError("cannot be blank")
+        return raw
+    if kind == "cabin":
+        v = raw.lower().replace("_", " ").replace("-", " ")
+        if v not in CABINS:
+            raise ValueError(f"{raw!r} is not one of {', '.join(CABINS)}")
+        return v
+    if kind == "codes":
+        codes = [x.strip().upper() for x in raw.replace(";", ",").split(",") if x.strip()]
+        bad = [c for c in codes if len(c) != 2 or not c.isalnum()]
+        if bad:
+            raise ValueError(f"{', '.join(bad)}: use 2-character airline codes, e.g. SQ for Singapore Airlines")
+        return codes
     if kind == "list":
         return [x.strip().lower() for x in raw.split(",") if x.strip()]
     if kind == "bool":
@@ -70,6 +90,17 @@ def _parse(kind: str, raw: str) -> Any:
             return False
         raise ValueError(f"{raw!r} is not yes or no")
     raise ValueError(kind)
+
+
+def _show(value: Any) -> str:
+    """A default as a person would say it."""
+    if value is True:
+        return "yes"
+    if value is False:
+        return "no"
+    if value == []:
+        return "none"
+    return str(value)
 
 
 def _state_path(run: str) -> str:
@@ -104,7 +135,8 @@ def build_spec(state: dict[str, Any], trip_name: str) -> dict[str, Any]:
         "trip_name": trip_name,
         "mode": "dry_run" if state.get("dry_run") else "live",
         "travelers": v["travelers"],
-        "traveler_profile": state.get("traveler_profile", "memory:travelers"),
+        "traveler_profile": f"memory:{v['traveler_profile']}",
+        "cabin": v["cabin"],
         "origin": v["origin"],
         "destination": v["destination"],
         "depart_window": [v["depart_earliest"], v["depart_latest"]],
@@ -122,7 +154,11 @@ def build_spec(state: dict[str, Any], trip_name: str) -> dict[str, Any]:
         },
         "soft": {"weights": {"duration": 0.4, "price": 0.3, "layover_comfort": 0.2, "carrier_rating": 0.1}},
         "services": state.get("services", []),
-        "allowed_sellers": v["allowed_sellers"],
+        "seller_policy": "airline_official",
+        "allowed_sellers": v["extra_sellers"],
+        "search_sources": list(airlines.DEFAULT_SEARCH_SOURCES),
+        "preferred_airlines": v["preferred_airlines"],
+        "avoid_airlines": v["avoid_airlines"],
         "max_price_drift_pct": v["max_price_drift_pct"],
         "sources": {k: a[k]["source"] if k in a else "default" for k in KINDS},
     }
@@ -138,16 +174,22 @@ def summary(spec: dict[str, Any]) -> str:
     lines = [
         f"Route: {spec['origin']}{tag('origin')} to {spec['destination']}{tag('destination')}",
         f"Departing: {spec['depart_window'][0]} to {spec['depart_window'][1]}",
-        f"Travelers: {spec['travelers']}{tag('travelers')}",
-        f"Budget: {h['price_cap_total']:.2f} {h['currency']}{tag('currency')} total, taxes included",
-        f"Airline sites: {', '.join(spec['allowed_sellers'])}",
+        f"Travelers: {spec['travelers']}{tag('travelers')}, details from saved profile "
+        f"'{spec['traveler_profile'].split(':', 1)[1]}'{tag('traveler_profile')}",
+        f"Cabin: {spec['cabin']}{tag('cabin')}",
+        f"Budget: {h['price_cap_total']:.2f} total for everyone, taxes included; currency {h['currency']}{tag('currency')}",
+        "Airlines: " + (", ".join(f"prefer {airlines.name(c)}" for c in spec["preferred_airlines"]) or "any airline")
+        + (f"; avoid {', '.join(airlines.name(c) for c in spec['avoid_airlines'])}" if spec["avoid_airlines"] else ""),
+        "Search: " + " and ".join({"google.com": "Google Flights", "skyscanner.com": "Skyscanner"}.get(d, d)
+                                  for d in spec["search_sources"]) + " (compares every airline)",
+        "Booking on: each airline's own website" + (f", or {', '.join(spec['allowed_sellers'])}" if spec["allowed_sellers"] else ""),
         f"Max stops: {h['max_stops']}{tag('max_stops')}; layovers {hrs(h['min_layover_min'])} to {hrs(h['max_layover_min'])}"
         f"{tag('min_layover_min')}; max trip {hrs(h['max_total_duration_min'])}{tag('max_total_duration_min')}",
         f"Bags: {h['checked_bags_per_traveler']} checked per traveler{tag('checked_bags_per_traveler')}",
         f"Red-eyes: {'avoid' if h['no_redeye'] else 'allowed'}{tag('no_redeye')}; "
         f"seats together: {'required' if h['seats_together'] else 'not required'}{tag('seats_together')}",
         f"Price-rise stop: over {spec['max_price_drift_pct']}%{tag('max_price_drift_pct')}",
-        f"Mode: {'DRY RUN (stops before payment)' if spec['mode'] == 'dry_run' else 'LIVE (books after your approval)'}",
+        f"Mode: {'DRY RUN (fills everything, stops at the payment page)' if spec['mode'] == 'dry_run' else 'LIVE (books after your approval)'}",
     ]
     if spec["services"]:
         lines.append(f"Requests: {', '.join(spec['services'])}")
@@ -210,7 +252,7 @@ def intake(run: str, sets: list[str], accept_defaults: bool = False, source: str
     have = set(state["answers"])
     missing_required = [k for k in KINDS if k in REQUIRED and k not in have]
     missing_optional = [] if state["defaults_ok"] else [k for k in KINDS if k not in REQUIRED and k not in have]
-    questions = [{"field": k, "question": q, **({"default": d} if d is not None else {})}
+    questions = [{"field": k, "question": q, **({"default": _show(d)} if d is not None else {})}
                  for k, q, _, d in QUESTIONS if k in missing_required + missing_optional]
     if errors or questions:
         return {

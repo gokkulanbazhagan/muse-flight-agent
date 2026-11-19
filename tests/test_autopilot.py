@@ -16,7 +16,6 @@ from pathlib import Path
 from flightagent.cli import main
 
 EX = Path(__file__).resolve().parents[1] / "examples"
-SELLERS = "emirates.com, qatarairways.com, airindia.com, lufthansa.com"
 
 
 def cli(*args):
@@ -55,14 +54,14 @@ def answer_everything(run, start, *extra):
                "--set", f"depart_earliest={start.isoformat()}",
                "--set", f"depart_latest={(start + timedelta(days=4)).isoformat()}",
                "--set", "travelers=2", "--set", "price_cap_total=3200",
-               "--set", f"allowed_sellers={SELLERS}",
+               "--set", "traveler_profile=family",
                "--set", "min_layover_min=150", "--set", "checked_bags_per_traveler=2",
                "--set", "max_total_duration_min=1500", "--set", "services=VGML,WCHR",
                "--accept-defaults", *extra)
 
 
 def scan_all(run):
-    for site in ("emirates.com", "qatarairways.com", "lufthansa.com", "airindia.com", "cheap-fares-emirates-deals.example"):
+    for site in ("emirates.com", "google.com", "lufthansa.com", "airindia.com", "cheap-fares-emirates-deals.example"):
         page = EX / "pages" / ("injected_fare_page.txt" if site.endswith(".example") else "clean_fare_page.txt")
         cli("scan-page", page, "--site", site, "--run", run)
 

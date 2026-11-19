@@ -58,9 +58,20 @@ def check(spec: dict[str, Any]) -> list[str]:
     except Exception:
         errs.append("depart_window must be [YYYY-MM-DD, YYYY-MM-DD]")
 
-    allowed = spec.get("allowed_sellers")
-    if not allowed or not all(isinstance(a, str) and "." in a for a in allowed):
-        errs.append("allowed_sellers must list at least one domain")
+    pol = spec.get("seller_policy") or ("listed_only" if spec.get("allowed_sellers") else "airline_official")
+    if pol not in ("airline_official", "listed_only"):
+        errs.append("seller_policy must be airline_official or listed_only")
+    allowed = spec.get("allowed_sellers") or []
+    if not all(isinstance(a, str) and "." in a for a in allowed):
+        errs.append("allowed_sellers must be a list of domains")
+    if pol == "listed_only" and not allowed:
+        errs.append("seller_policy listed_only needs at least one domain in allowed_sellers")
+    for k in ("search_sources",):
+        if not all(isinstance(a, str) and "." in a for a in spec.get(k) or []):
+            errs.append(f"{k} must be a list of domains")
+    for k in ("preferred_airlines", "avoid_airlines"):
+        if not all(isinstance(a, str) and re.fullmatch(r"[A-Z0-9]{2}", a.upper()) for a in spec.get(k) or []):
+            errs.append(f"{k} must be 2-character airline codes, e.g. SQ")
 
     drift = spec.get("max_price_drift_pct", 3)
     if not isinstance(drift, (int, float)) or not 0 <= drift <= 20:

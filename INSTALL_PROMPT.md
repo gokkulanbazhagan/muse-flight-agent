@@ -29,8 +29,11 @@ Sentinel, which governs all network traffic out of the VM.
 ## 2. Traveler profile (memory, not files)
 
 ```
-Remember a traveler profile called "family": <names exactly as on passports>.
-<meal / assistance needs>. Use this profile only for flight bookings.
+Remember a traveler profile called "family" for flight bookings:
+- <full name exactly as on passport>, born <date of birth>
+- <next traveler>, born <date of birth>
+Booking contact: <email>, <phone>.
+Needs: <meal / assistance needs, or none>.
 ```
 
 ## 3. Dry run first (real search, no payment)
@@ -41,9 +44,10 @@ python3 -m flightagent next and follow SKILL.md for each stage. Ask me every
 trip question yourself and wait for my answers. Search the airline sites live.
 ```
 
-Kattappa asks for the trip details, shows you a summary to confirm, searches
-live, shows the approval cards, waits for your pick, checks the checkout page,
-and stops before payment.
+Kattappa asks for the trip details, shows you a summary to confirm, compares
+every airline on Google Flights, shows the approval cards, waits for your pick,
+fills in your travelers on the airline's own site, checks the checkout page, and
+stops at the payment page.
 
 ## 4. Book for real
 
