@@ -48,7 +48,7 @@ class Ranking(unittest.TestCase):
         strict["hard"]["price_cap_total"] = 100
         out = v.run(strict, CANDS, top=3)
         self.assertEqual(out["shortlist"], [])
-        self.assertIn("relax", out["next_step"])
+        self.assertIn("no option passed", out["next_step"])
 
 
 if __name__ == "__main__":

@@ -4,9 +4,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from .guard import host_of, registrable
+
 SCHEMA = {
     "id": "string, unique",
     "seller": "domain you would check out on, e.g. singaporeair.com",
+    "source_url": "the live results page this itinerary was read from (must be on the seller's domain)",
     "carrier": "airline code, e.g. SQ",
     "total_price": "number, all travelers, taxes and fees included",
     "currency": "e.g. USD",
@@ -24,11 +27,16 @@ def check_one(c: Any) -> list[str]:
         return ["candidate is not an object"]
     cid = c.get("id", "?")
     errs = []
-    for k in ("id", "seller", "carrier", "total_price", "currency", "segments"):
+    for k in ("id", "seller", "source_url", "carrier", "total_price", "currency", "segments"):
         if k not in c:
             errs.append(f"{cid}: missing {k}")
     if errs:
         return errs
+    url = str(c["source_url"])
+    if not url.startswith("https://"):
+        errs.append(f"{cid}: source_url must be the https page the itinerary came from")
+    elif registrable(host_of(url)) != registrable(c["seller"]):
+        errs.append(f"{cid}: source_url is not on the seller's domain {c['seller']}")
     if not isinstance(c["total_price"], (int, float)) or c["total_price"] <= 0:
         errs.append(f"{cid}: total_price must be a positive number")
     segs = c["segments"]

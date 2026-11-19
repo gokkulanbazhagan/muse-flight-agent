@@ -35,7 +35,8 @@ Each candidate the agent collects:
 ```json
 {
   "id": "c1",
-  "seller": "aa.com",
+  "seller": "airindia.com",
+  "source_url": "https://www.airindia.com/booking/results?...",
   "carrier": "AI",
   "total_price": 1840.00,
   "currency": "USD",
@@ -53,4 +54,10 @@ Each candidate the agent collects:
 }
 ```
 
-`layovers_min` has one entry per connection, in minutes.
+`layovers_min` has one entry per connection, in minutes. `source_url` is the live
+results page the itinerary was read from; it must be on the seller's domain, and
+that site must have a logged `scan-page` in the run.
+
+The spec is written by `flightagent intake` after the user confirms the summary.
+Its `sources` field records where each answer came from: `user`, `memory` or
+`default`.

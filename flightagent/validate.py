@@ -182,6 +182,6 @@ def run(spec: dict[str, Any], candidates: list[dict[str, Any]], top: int) -> dic
         "passed": len(passing),
         "shortlist": shortlist,
         "rejected": [{"id": r["id"], "reasons": r["_reasons"]} for r in rejected],
-        "next_step": "ask the user to pick one option" if shortlist
-        else "no option passed: show rejection reasons and ask which constraint to relax",
+        "next_step": "options ready for the user's pick" if shortlist
+        else "no option passed; the rejection reasons say which rule each one broke",
     }

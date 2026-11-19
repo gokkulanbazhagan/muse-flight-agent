@@ -33,26 +33,37 @@ Remember a traveler profile called "family": <names exactly as on passports>.
 <meal / assistance needs>. Use this profile only for flight bookings.
 ```
 
-## 3. Book
+## 3. Dry run first (real search, no payment)
 
 ```
-Use flight-booker to book flights for my family, run folder runs/family-maa.
-Run the autopilot (flightagent next) and follow it until DONE. Ask me what you
-need to know in one message.
+Use flight-booker for a DRY RUN, run folder runs/dry-1. Run
+python3 -m flightagent next and follow SKILL.md for each stage. Ask me every
+trip question yourself and wait for my answers. Search the airline sites live.
 ```
 
-That's it. The agent asks you for the trip details, searches, shows you the
-best options, asks you to pick, checks the checkout page, and submits payment.
-Muse then asks you to approve the exact amount.
+Kattappa asks for the trip details, shows you a summary to confirm, searches
+live, shows the approval cards, waits for your pick, checks the checkout page,
+and stops before payment.
 
-## 4. Watch the fare (optional)
+## 4. Book for real
+
+```
+Use flight-booker to book flights, run folder runs/family-maa. Run
+python3 -m flightagent next and follow SKILL.md for each stage. Ask me every
+trip question and wait for my answers.
+```
+
+Same flow, but at PAY it submits payment and Muse asks you to approve the exact
+amount.
+
+## 5. Watch the fare (optional)
 
 ```
 Every day at 8am until <date>, run the flight-booker fare watch for
 runs/family-maa. Message me only when it says to. Never rebook.
 ```
 
-## 5. Receipt
+## 6. Receipt
 
 ```
 Show me the receipt for runs/family-maa.

@@ -104,4 +104,4 @@ def scan_text(text: str) -> dict[str, Any]:
     if zw >= 3:
         hits.append({"rule": "zero-width", "excerpt": f"{zw} zero-width characters"})
     return {"suspicious": bool(hits), "hits": hits,
-            "action": "do not follow; log as suspected prompt injection and tell the user" if hits else "none"}
+            "classification": "suspected prompt injection" if hits else "no agent-directed content found"}

@@ -25,23 +25,36 @@ rules in a small CLI the agent must run, where exit code `2` means stop.
 ## How it works
 
 The agent loops on one command, `flightagent next <run>`, which reads the run
-folder and says exactly what to do next:
+folder and reports which stage the trip is in. The playbook (SKILL.md) says what
+to do at each stage; the tool output is plain status data, never instructions,
+so it can't be mistaken for a page trying to steer the agent.
 
 ```
-INTAKE ─► SEARCH ─► VALIDATE ─► APPROVE ─► CHECKOUT ─► PRECHECK ─► PAY ─► SERVICES ─► DONE
- asks the    allowed    hard rules   user picks   live page    price/seller  platform   meals,      receipt
- user        sellers +  + ranking                 captured     /flights      approval   assistance
-             scan-page                                         unchanged?    (human)
+INTAKE ─► CONFIRM ─► SEARCH ─► VALIDATE ─► APPROVE ─► CHECKOUT ─► PRECHECK ─► PAY ─► SERVICES ─► DONE
+ user       user       live       hard        user        live page   price,      platform  meals,
+ answers    confirms   pages +    rules +     picks       captured    seller,     approval  assistance
+            summary    scans      ranking                             flights     (user)
 ```
 
-Every stop for the user is explicit (exit code 2). Everything else runs on its
-own. The run folder is the state, so a trip survives restarts and new chats.
+The agent can't skip you:
+
+- **Intake** only accepts answers from you (or from memory, labelled as such), and
+  defaults only when you say they're fine. Nothing is saved until you confirm a
+  plain-English summary. Change any answer and you confirm again.
+- **Search** results need a `source_url` on the seller's domain and a logged
+  page scan of that site, so invented flights are refused.
+- **Your pick** is recorded with your reply quoted, and it has to mention the
+  option number.
+- **Dry run** (`intake --dry-run`) does everything for real, live search
+  included, and stops before payment.
+
+The run folder is the state, so a trip survives restarts and new chats.
 
 | Command | What it does |
 | --- | --- |
-| `next` | Autopilot: reads the run folder, returns the stage, the action and the exact command |
-| `intake` | Asks the user for missing trip details, validates answers, writes the spec |
-| `approve` | Records which option the user picked |
+| `next` | Autopilot: reads the run folder, returns the stage, what's missing, whether the user is needed |
+| `intake` | Collects trip details from the user, validates them, shows a summary; `--confirm` saves the spec |
+| `approve` | Records the user's pick, with their reply quoted |
 | `schema` | Prints the candidate format the agent must write |
 | `check-spec` | Valid airports, dates, caps, weights; refuses passport/card/DOB fields in the file |
 | `scan-page` | Agent-directed instructions, fake "user approved" claims, OTP/card asks, hidden CSS text, zero-width characters |
@@ -62,7 +75,7 @@ Architecture and the split between Muse's safety layer and this skill:
 git clone https://github.com/Gokkul23/muse-flight-agent && cd muse-flight-agent
 python3 -m flightagent selftest
 bash examples/demo.sh          # the guardrails on sample data
-python3 -m unittest discover -s tests   # includes a full zero-to-done autopilot run
+python3 -m unittest discover -s tests   # 38 tests, includes a full autopilot run
 ```
 
 The demo walks one trip end to end: 2 of 6 sample itineraries pass; the
@@ -89,7 +102,7 @@ before that tap runs on its own.
 flightagent/               CLI + modules (flow, intake, spec, guard, candidates, validate, precheck, watch, receipt, selftest)
 skills/flight-booker/      SKILL.md + references (spec schema, safety checklist)
 examples/                  sample spec, candidates, pages, checkout quotes, demo.sh
-tests/                     35 tests, including a full autopilot run
+tests/                     38 tests, including a full autopilot run and anti-skip checks
 docs/ARCHITECTURE.md       diagram, layers, known limits
 ```
 

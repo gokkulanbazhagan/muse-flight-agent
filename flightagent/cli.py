@@ -1,9 +1,10 @@
 """Command line the agent calls at each step. Every command prints JSON or text
 and exits non-zero when the agent must stop and ask the user.
 
-  python3 -m flightagent next        runs/<id>          # autopilot: what to do now
-  python3 -m flightagent intake      runs/<id> --set origin=SFO ... [--accept-defaults]
-  python3 -m flightagent approve     runs/<id> --pick 1
+  python3 -m flightagent next        runs/<id>          # autopilot: which stage the trip is in
+  python3 -m flightagent intake      runs/<id> --set origin=SFO ... [--source memory] [--accept-defaults] [--dry-run]
+  python3 -m flightagent intake      runs/<id> --confirm # only after the user confirmed the summary
+  python3 -m flightagent approve     runs/<id> --pick 1 --user-said "option 1 please"
   python3 -m flightagent schema
   python3 -m flightagent check-spec  trip_spec.json
   python3 -m flightagent scan-page   page.txt           [--run runs/<id>] [--site airline.com]
@@ -14,7 +15,7 @@ and exits non-zero when the agent must stop and ask the user.
   python3 -m flightagent receipt     runs/<id>
   python3 -m flightagent selftest
 
-Exit codes: 0 ok, 2 stop and ask the user, 1 usage or input error.
+Exit codes: 0 ok, 2 needs the user (or blocked), 1 usage or input error.
 """
 from __future__ import annotations
 
@@ -73,7 +74,7 @@ def cmd_validate(a) -> int:
         print(opt["approval_card"], end="\n\n")
     for r in result["rejected"]:
         print(f"rejected {r['id']}: {'; '.join(r['reasons'])}", file=sys.stderr)
-    print(f"{result['passed']}/{result['checked']} passed. Next: {result['next_step']}")
+    print(f"{result['passed']}/{result['checked']} passed. Status: {result['next_step']}")
     return 0 if result["shortlist"] else 2
 
 
@@ -86,25 +87,27 @@ def cmd_precheck(a) -> int:
         return 1
     result = precheck.precheck(s, picked, _load(a.live))
     if a.run:
-        receipt.log(a.run, "precheck", verdict=result["verdict"], summary=f"{result['verdict']}: {'; '.join(result['block']) or 'all checks passed'}")
+        receipt.log(a.run, "precheck", verdict=result["verdict"], live_sha=flow.file_sha(a.live), summary=f"{result['verdict']}: {'; '.join(result['block']) or 'all checks passed'}")
     _dump(result)
     return 0 if result["verdict"] == "PASS" else 2
 
 
 def cmd_intake(a) -> int:
-    result = intake.intake(a.run, a.set or [], a.accept_defaults)
+    result = intake.intake(a.run, a.set or [], a.accept_defaults, a.source, a.dry_run, a.confirm)
     _dump(result)
-    return 0 if result["done"] else 2
+    if result["state"] == "error":
+        return 1
+    return 0 if result["state"] == "confirmed" else 2
 
 
 def cmd_next(a) -> int:
     result = flow.next_step(a.run)
     _dump(result)
-    return 2 if result["stop_for_user"] else 0
+    return 2 if result["needs_user"] else 0
 
 
 def cmd_approve(a) -> int:
-    _dump(flow.approve(a.run, a.pick))
+    _dump(flow.approve(a.run, a.pick, a.user_said))
     return 0
 
 
@@ -151,10 +154,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--pick", type=int, required=True); p.add_argument("--live", required=True); p.add_argument("--run")
     p.set_defaults(fn=cmd_precheck)
     p = sub.add_parser("intake"); p.add_argument("run"); p.add_argument("--set", action="append")
-    p.add_argument("--accept-defaults", action="store_true"); p.set_defaults(fn=cmd_intake)
+    p.add_argument("--source", default="user", choices=intake.SOURCES)
+    p.add_argument("--accept-defaults", action="store_true"); p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--confirm", action="store_true"); p.set_defaults(fn=cmd_intake)
     p = sub.add_parser("next"); p.add_argument("run"); p.set_defaults(fn=cmd_next)
     p = sub.add_parser("approve"); p.add_argument("run"); p.add_argument("--pick", type=int, required=True)
-    p.set_defaults(fn=cmd_approve)
+    p.add_argument("--user-said", required=True); p.set_defaults(fn=cmd_approve)
     p = sub.add_parser("schema"); p.set_defaults(fn=cmd_schema)
     p = sub.add_parser("watch"); p.add_argument("baseline"); p.add_argument("quote")
     p.add_argument("--threshold", type=float, default=3.0); p.set_defaults(fn=cmd_watch)

@@ -35,6 +35,9 @@ def run() -> tuple[bool, str]:
     checks.append(("fare watch notices a drop", watch.compare({"total_price": 2800, "currency": "USD"}, {"total_price": 2600, "currency": "USD"})["notify"]))
     with tempfile.TemporaryDirectory() as d:
         checks.append(("autopilot starts by asking the user", flow.next_step(d)["stage"] == "INTAKE"))
+        from . import intake
+        out = intake.intake(d, ["origin=SFO"])
+        checks.append(("intake waits for the user's answers", out["state"] == "needs_user_answers"))
     ok = all(c for _, c in checks)
     lines = [f"flightagent {__version__} on Python {sys.version.split()[0]}"]
     lines += [f"  [{'ok' if c else 'FAIL'}] {name}" for name, c in checks]
