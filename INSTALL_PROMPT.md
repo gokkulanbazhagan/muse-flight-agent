@@ -15,8 +15,8 @@ as code you choose to run.
 Pin a release so what you install is what you read:
 
 ```
-Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/16e4e13596c8801ef72b5ccb71313a219f50f63b/skills/flight-booker/SKILL.md
-Clone https://github.com/Gokkul23/muse-flight-agent at commit 16e4e13596c8801ef72b5ccb71313a219f50f63b into your workspace.
+Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/708a0a2ac5ad20cb43af864b463d3b6f3b72f05f/skills/flight-booker/SKILL.md
+Clone https://github.com/Gokkul23/muse-flight-agent at commit 708a0a2ac5ad20cb43af864b463d3b6f3b72f05f into your workspace.
 Install exactly the files in the skill's "Files manifest" section, keeping paths.
 Run its status check (selftest and the unit tests) and show me the real output.
 If both pass, save flight-booker as a reusable skill for any request to find,
