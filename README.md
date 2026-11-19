@@ -21,12 +21,11 @@ finish before sending the next.
 
 ### Step 1. Install the skill
 
-Copy and send this exactly:
+Copy and send this exactly. It always installs the **latest version**:
 
 ```
-Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/708a0a2ac5ad20cb43af864b463d3b6f3b72f05f/skills/flight-booker/SKILL.md
-Clone https://github.com/Gokkul23/muse-flight-agent at commit 708a0a2ac5ad20cb43af864b463d3b6f3b72f05f into your workspace.
-Install exactly the files in the skill's "Files manifest" section, keeping paths.
+Install the flight-booker skill from https://github.com/Gokkul23/muse-flight-agent (main branch, latest version).
+Clone the repo into your workspace, read skills/flight-booker/SKILL.md, and install exactly the files in its "Files manifest" section, keeping paths.
 Run python3 -m flightagent selftest and python3 -m unittest discover -s tests, and show me the real output.
 If both pass, save flight-booker as a reusable skill for any request to find, compare, book or watch flights.
 ```
@@ -34,7 +33,21 @@ If both pass, save flight-booker as a reusable skill for any request to find, co
 **Muse will ask for your permission** to download from GitHub and to run the
 downloaded code. That's Muse's safety layer working as intended. Say yes.
 
-✅ **It worked if you see:** `STATUS: ready` and `Ran 55 tests ... OK`.
+✅ **It worked if you see:** `flightagent 1.3.0` (or newer), `STATUS: ready`,
+and the tests ending in `OK`.
+
+### Already installed an older version? Update it
+
+```
+Update the flight-booker skill to the latest version from
+https://github.com/Gokkul23/muse-flight-agent (main branch). Replace your installed
+files per the Files manifest in skills/flight-booker/SKILL.md. Then run
+python3 -m flightagent selftest and python3 -m unittest discover -s tests and show
+me the real output.
+```
+
+Not sure which version you have? Ask Muse: `Run python3 -m flightagent --version`.
+The latest is listed in [CHANGELOG.md](CHANGELOG.md).
 
 ### Step 2. Save your travelers (once)
 
@@ -172,10 +185,10 @@ INTAKE ─► CONFIRM ─► SEARCH ─► VALIDATE ─► APPROVE ─► CHECKO
 
 Exit codes: `0` continue · `2` needs the user (or blocked) · `1` input error.
 
-More: [architecture and safety layers](docs/ARCHITECTURE.md) ·
+More: [changelog](CHANGELOG.md) · [architecture and safety layers](docs/ARCHITECTURE.md) ·
 [trip spec format](skills/flight-booker/references/trip-spec.md) ·
 [safety checklist](skills/flight-booker/references/safety-checklist.md) ·
-[install prompts](INSTALL_PROMPT.md)
+[install prompts, including pinning an exact version](INSTALL_PROMPT.md)
 
 ### Repo layout
 

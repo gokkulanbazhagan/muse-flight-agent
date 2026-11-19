@@ -12,19 +12,28 @@ as code you choose to run.
 
 ## 1. Install
 
-Pin a release so what you install is what you read:
+The latest version (recommended):
+
+```
+Install the flight-booker skill from https://github.com/Gokkul23/muse-flight-agent (main branch, latest version).
+Clone the repo into your workspace, read skills/flight-booker/SKILL.md, and install exactly the files in its "Files manifest" section, keeping paths.
+Run python3 -m flightagent selftest and python3 -m unittest discover -s tests, and show me the real output.
+If both pass, save flight-booker as a reusable skill for any request to find, compare, book or watch flights.
+```
+
+Want an exact version that never changes under you? Pin a commit instead. The
+current release, v1.3.0, is commit `708a0a2ac5ad20cb43af864b463d3b6f3b72f05f`:
 
 ```
 Install this skill: https://raw.githubusercontent.com/Gokkul23/muse-flight-agent/708a0a2ac5ad20cb43af864b463d3b6f3b72f05f/skills/flight-booker/SKILL.md
 Clone https://github.com/Gokkul23/muse-flight-agent at commit 708a0a2ac5ad20cb43af864b463d3b6f3b72f05f into your workspace.
 Install exactly the files in the skill's "Files manifest" section, keeping paths.
 Run its status check (selftest and the unit tests) and show me the real output.
-If both pass, save flight-booker as a reusable skill for any request to find,
-compare, book or watch flights.
+If both pass, save flight-booker as a reusable skill.
 ```
 
-Muse will ask you to approve the GitHub download; that approval comes from
-Sentinel, which governs all network traffic out of the VM.
+Muse will ask you to approve the GitHub download and running the code; that
+approval comes from Muse's safety layer.
 
 ## 2. Traveler profile (memory, not files)
 
